@@ -74,6 +74,7 @@ public class Delegate implements PropertyChangeListener {
     class Panel extends JPanel{
         private Delegate delegate;
         private Rectangle rect = null;
+        private Boolean zoom = false;
         private boolean drawing = false;
 
         private int x;
@@ -110,12 +111,12 @@ public class Delegate implements PropertyChangeListener {
                 }
             }
 
-            if (rect == null) {
-                return;
-            } else {
+            if (zoom) {
                 g.setColor(Color.RED);
                 g.drawRect(x,y,width,height);
             }
+
+
         }
 
         private class MyMouseAdapter extends MouseAdapter {
@@ -123,6 +124,7 @@ public class Delegate implements PropertyChangeListener {
             @Override
             public void mousePressed(MouseEvent e) {
                 mousePress = e.getPoint();
+                zoom = true;
             }
 
             @Override
@@ -139,6 +141,7 @@ public class Delegate implements PropertyChangeListener {
             @Override
             public void mouseReleased(MouseEvent e) {
                 drawing = false;
+                zoom = false;
                 repaint();
             }
 
