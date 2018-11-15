@@ -1,9 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 import java.awt.geom.Line2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -28,6 +25,8 @@ public class Delegate implements PropertyChangeListener {
         menu = new JMenuBar();
         toolbar = new JToolBar();
 
+        points = model.getPoints();
+
         panel = new Panel(this);
         mainFrame.add(panel);
 
@@ -39,7 +38,7 @@ public class Delegate implements PropertyChangeListener {
 
         model.addObserver(this);
 
-        points = model.getPoints();
+
 
     }
 
@@ -74,10 +73,23 @@ public class Delegate implements PropertyChangeListener {
 
     class Panel extends JPanel{
         private Delegate delegate;
+        private Rectangle rect = null;
+        private boolean drawing = false;
+
+        private int x;
+        private int y;
+        private int width;
+        private int height;
+
+        private final Color black = new Color(200, 200, 255);
+        private final Color blue = Color.blue;
 
         Panel(Delegate delegate){
             this.delegate = delegate;
             setPreferredSize(new Dimension(1000,1000));
+            MyMouseAdapter mouseAdapter = new MyMouseAdapter();
+            addMouseListener(mouseAdapter);
+            addMouseMotionListener(mouseAdapter);
         }
 
         @Override
@@ -87,6 +99,8 @@ public class Delegate implements PropertyChangeListener {
             int[][] points = delegate.points;
 
             System.out.println("Redrawn!!");
+            g.setColor(Color.BLACK);
+
 
             for(int y = 0; y< 800; y++){
                 for(int x=0; x<800; x++){
@@ -95,6 +109,39 @@ public class Delegate implements PropertyChangeListener {
                     }
                 }
             }
+
+            if (rect == null) {
+                return;
+            } else {
+                g.setColor(Color.RED);
+                g.drawRect(x,y,width,height);
+            }
+        }
+
+        private class MyMouseAdapter extends MouseAdapter {
+            private Point mousePress = null;
+            @Override
+            public void mousePressed(MouseEvent e) {
+                mousePress = e.getPoint();
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                drawing = true;
+                x = Math.min(mousePress.x, e.getPoint().x);
+                y = Math.min(mousePress.y, e.getPoint().y);
+                width = Math.abs(mousePress.x - e.getPoint().x);
+                height = Math.abs(mousePress.y - e.getPoint().y);
+
+                repaint();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                drawing = false;
+                repaint();
+            }
+
         }
     }
 }
