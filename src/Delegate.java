@@ -17,6 +17,8 @@ public class Delegate implements PropertyChangeListener {
     private JMenuBar menu;
     private JToolBar toolbar;
     private JButton drawBtn;
+    private JButton undoBtn;
+    private JButton redoBtn;
     public int[][] points;
 
     public Delegate(Model model){
@@ -41,8 +43,24 @@ public class Delegate implements PropertyChangeListener {
 
 
     private void setupToolbar(){
-        drawBtn = new JButton("Draw");
+        drawBtn = new JButton("ReDraw");
         drawBtn.addActionListener(new ActionListener(){     // to translate event for this button into appropriate model method call
+            public void actionPerformed(ActionEvent e){
+                // should  call method in model class if you want it to affect model
+                panel.paintComponent(panel.getGraphics());
+            }
+        });
+
+        undoBtn = new JButton("Undo");
+        undoBtn.addActionListener(new ActionListener(){     // to translate event for this button into appropriate model method call
+            public void actionPerformed(ActionEvent e){
+                // should  call method in model class if you want it to affect model
+                panel.paintComponent(panel.getGraphics());
+            }
+        });
+
+        redoBtn = new JButton("Redo");
+        redoBtn.addActionListener(new ActionListener(){     // to translate event for this button into appropriate model method call
             public void actionPerformed(ActionEvent e){
                 // should  call method in model class if you want it to affect model
                 panel.paintComponent(panel.getGraphics());
@@ -51,6 +69,8 @@ public class Delegate implements PropertyChangeListener {
 
         // add buttons, label, and textfield to the toolbar
         toolbar.add(drawBtn);
+        toolbar.add(undoBtn);
+        toolbar.add(redoBtn);
 
         // add toolbar to north of main frame
         mainFrame.add(toolbar, BorderLayout.NORTH);
