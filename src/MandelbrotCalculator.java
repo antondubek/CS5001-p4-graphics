@@ -45,8 +45,8 @@ public class MandelbrotCalculator {
 
     // Initial parameter values
     protected static final double INITIAL_MIN_REAL = -2.0;
-    protected static final double INITIAL_MAX_REAL = 0.7;
-    protected static final double INITIAL_MIN_IMAGINARY = -1.25;
+    protected static final double INITIAL_MAX_REAL = 1.0;
+    protected static final double INITIAL_MIN_IMAGINARY = -1.2;
     protected static final double INITIAL_MAX_IMAGINARY = 1.25;
     protected static final int INITIAL_MAX_ITERATIONS = 50;
 

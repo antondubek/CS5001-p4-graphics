@@ -20,6 +20,7 @@ public class Model {
     }
 
     public int[][] getPoints() {
+
         int[][] madelbrotData = mandelCalc.calcMandelbrotSet(800, 800,
                 MandelbrotCalculator.INITIAL_MIN_REAL, MandelbrotCalculator.INITIAL_MAX_REAL,
                 MandelbrotCalculator.INITIAL_MIN_IMAGINARY, MandelbrotCalculator.INITIAL_MAX_IMAGINARY,

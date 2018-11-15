@@ -37,9 +37,6 @@ public class Delegate implements PropertyChangeListener {
 
 
         model.addObserver(this);
-
-
-
     }
 
 
@@ -82,15 +79,18 @@ public class Delegate implements PropertyChangeListener {
         private int width;
         private int height;
 
+        private Color[] colorArray = new Color[48];
+
         private final Color black = new Color(200, 200, 255);
         private final Color blue = Color.blue;
 
         Panel(Delegate delegate){
             this.delegate = delegate;
-            setPreferredSize(new Dimension(1000,1000));
+            setPreferredSize(new Dimension(800,800));
             MyMouseAdapter mouseAdapter = new MyMouseAdapter();
             addMouseListener(mouseAdapter);
             addMouseMotionListener(mouseAdapter);
+            createColorArray();
         }
 
         @Override
@@ -100,12 +100,13 @@ public class Delegate implements PropertyChangeListener {
             int[][] points = delegate.points;
 
             System.out.println("Redrawn!!");
-            g.setColor(Color.BLACK);
+            //g.setColor(Color.BLACK);
 
 
             for(int y = 0; y< 800; y++){
                 for(int x=0; x<800; x++){
-                    if(points[y][x] >= 50){
+                    if(points[y][x] >= 2){
+                        g.setColor(colorArray[points[y][x] % colorArray.length]);
                         g.drawLine(x,y,x,y);
                     }
                 }
@@ -118,6 +119,17 @@ public class Delegate implements PropertyChangeListener {
 
 
         }
+
+        private void createColorArray(){
+            for(int i=0; i<colorArray.length; i++){
+                int color = 2 * i *256/ colorArray.length;
+                if(color>255){
+                    color = 511 - color;
+                }
+                colorArray[i] = new Color(color, color, color);
+            }
+        }
+
 
         private class MyMouseAdapter extends MouseAdapter {
             private Point mousePress = null;
