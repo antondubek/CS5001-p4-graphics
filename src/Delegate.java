@@ -17,10 +17,7 @@ public class Delegate implements PropertyChangeListener {
     private Panel panel;
     private JMenuBar menu;
     private JToolBar toolbar;
-    private JButton drawBtn;
-    private JButton undoBtn;
-    private JButton redoBtn;
-    private JButton changeIterationsBtn;
+    private JButton drawBtn, undoBtn, redoBtn, changeIterationsBtn, toggleModeBtn;
     private JTextField iterationsTV;
 
 
@@ -81,12 +78,26 @@ public class Delegate implements PropertyChangeListener {
 
         iterationsTV = new JTextField("Current Max Iterations = " + model.getMax_iterations());
 
+        toggleModeBtn = new JButton("Toggle Mode");
+        toggleModeBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(panel.zoom == false){
+                    panel.zoom = true;
+                } else {
+                    panel.zoom = false;
+                }
+            }
+        });
+
+
         // add buttons, label, and textfield to the toolbar
         toolbar.add(drawBtn);
         toolbar.add(undoBtn);
         toolbar.add(redoBtn);
         toolbar.add(changeIterationsBtn);
         toolbar.add(iterationsTV);
+        toolbar.add(toggleModeBtn);
 
         // add toolbar to north of main frame
         mainFrame.add(toolbar, BorderLayout.NORTH);
@@ -109,11 +120,15 @@ public class Delegate implements PropertyChangeListener {
     class Panel extends JPanel{
         private Delegate delegate;
         private Rectangle rect = null;
-        private Boolean zoom = false;
+        private boolean zoom = true;
         private boolean drawing = false;
 
+        private int clickX;
+        private int clickY;
         private int x;
         private int y;
+        private int xCurrent;
+        private int yCurrent;
         private int width;
         private int height;
 
@@ -152,9 +167,12 @@ public class Delegate implements PropertyChangeListener {
                 }
             }
 
-            if (zoom) {
+            if (drawing && zoom) {
                 g.setColor(Color.RED);
                 g.drawRect(x,y,width,height);
+            } else if (drawing && !zoom) {
+                g.setColor(Color.RED);
+                g.drawLine(clickX,clickY,xCurrent,yCurrent);
             }
 
 
@@ -173,10 +191,17 @@ public class Delegate implements PropertyChangeListener {
 
         private class MyMouseAdapter extends MouseAdapter {
             private Point mousePress = null;
+//            private Panel panel;
+//
+//            public MyMouseAdapter(Panel panel) {
+//                this.panel = panel;
+//            }
+
             @Override
             public void mousePressed(MouseEvent e) {
                 mousePress = e.getPoint();
-                zoom = true;
+                clickX = mousePress.x;
+                clickY = mousePress.y;
             }
 
             @Override
@@ -186,6 +211,8 @@ public class Delegate implements PropertyChangeListener {
                 y = Math.min(mousePress.y, e.getPoint().y);
                 width = Math.abs(mousePress.x - e.getPoint().x);
                 height = Math.abs(mousePress.y - e.getPoint().y);
+                xCurrent = e.getPoint().x;
+                yCurrent = e.getPoint().y;
 
                 repaint();
             }
@@ -193,13 +220,16 @@ public class Delegate implements PropertyChangeListener {
             @Override
             public void mouseReleased(MouseEvent e) {
                 drawing = false;
-                zoom = false;
 
                 System.out.println("Mouse clicked =" + mousePress);
                 System.out.println("Mouse released = "+ e.getPoint());
 
                 //Pass the point clicked and the point released
-                model.setZoom(mousePress, e.getPoint());
+                if(zoom){
+                    model.setZoom(mousePress, e.getPoint());
+                } else {
+                    // model.pan
+                }
                 repaint();
             }
 
