@@ -1,9 +1,11 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
@@ -164,7 +166,7 @@ public class Delegate implements PropertyChangeListener {
         capture.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                saveImage();
             }
         });
 
@@ -190,6 +192,24 @@ public class Delegate implements PropertyChangeListener {
 
         } catch(Exception e){
             System.out.println("Delegate saveModel: " + e.getMessage());
+        }
+    }
+
+    private void saveImage(){
+        BufferedImage imagebuf=null;;
+        try {
+            imagebuf = new Robot().createScreenCapture(panel.bounds());
+        } catch (AWTException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        Graphics2D graphics2D = imagebuf.createGraphics();
+        panel.paint(graphics2D);
+        try {
+            ImageIO.write(imagebuf,"jpeg", new File("save1.jpeg"));
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            System.out.println("error");
         }
     }
 
