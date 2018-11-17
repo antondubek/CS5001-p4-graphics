@@ -15,7 +15,7 @@ public class Delegate implements PropertyChangeListener {
     private JMenuBar menu;
     private JToolBar toolbar;
     private JButton drawBtn, undoBtn, redoBtn, changeIterationsBtn;
-    private JCheckBox toggleModeBtn;
+    private JCheckBox toggleModeBtn, toggleRatio;
     private JTextArea iterationsTV;
 
 
@@ -76,9 +76,9 @@ public class Delegate implements PropertyChangeListener {
             }
         });
 
-        iterationsTV = new JTextArea("Current Max Iterations = " + model.getMax_iterations());
-        iterationsTV.setEditable(false);
-        iterationsTV.setLineWrap(true);
+//        iterationsTV = new JTextArea("Current Max Iterations = " + model.getMax_iterations());
+//        iterationsTV.setEditable(false);
+//        iterationsTV.setLineWrap(true);
 
         toggleModeBtn = new JCheckBox("Pan", false);
         toggleModeBtn.addActionListener(new ActionListener() {
@@ -93,6 +93,20 @@ public class Delegate implements PropertyChangeListener {
             }
         });
 
+        toggleRatio = new JCheckBox("Zoom Magnification", false);
+        toggleRatio.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox cb = (JCheckBox) e.getSource();
+                if(cb.isSelected()){
+                    panel.displayRatio = true;
+                } else {
+                    panel.displayRatio = false;
+                }
+                panel.repaint();
+            }
+        });
+
 
         // add buttons, label, and textfield to the toolbar
         toolbar.add(drawBtn);
@@ -100,7 +114,7 @@ public class Delegate implements PropertyChangeListener {
         toolbar.add(redoBtn);
         toolbar.add(changeIterationsBtn);
         toolbar.add(toggleModeBtn);
-        //toolbar.add(iterationsTV);
+        toolbar.add(toggleRatio);
 
 
         // add toolbar to north of main frame
@@ -127,6 +141,7 @@ public class Delegate implements PropertyChangeListener {
         private Rectangle rect = null;
         private boolean zoom = true;
         private boolean drawing = false;
+        private boolean displayRatio = false;
 
         private int clickX;
         private int clickY;
@@ -138,9 +153,6 @@ public class Delegate implements PropertyChangeListener {
         private int height;
 
         private Color[] colorArray = new Color[model.getMax_iterations()];
-
-        private final Color black = new Color(200, 200, 255);
-        private final Color blue = Color.blue;
 
         private int[][] points;
 
@@ -161,15 +173,16 @@ public class Delegate implements PropertyChangeListener {
 
             System.out.println("Redrawn!!");
             //g.setColor(Color.BLACK);
-            String ratio = "Zoom x" + model.getRatio();
-            g.drawString(ratio, model.resolution/10, model.resolution/10);
+
+            if(displayRatio) {
+                String ratio = "Zoom x" + model.getRatio();
+                g.drawString(ratio, model.resolution / 10, model.resolution / 10);
+            }
 
             for(int y = 0; y< model.resolution; y++){
                 for(int x=0; x<model.resolution; x++){
-                    if(points[y][x] >= model.getMax_iterations()){
-                        //g.setColor(colorArray[points[y][x] % colorArray.length]);
+                        g.setColor(getColor(points[y][x]));
                         g.drawLine(x,y,x,y);
-                    }
                 }
             }
 
@@ -193,6 +206,18 @@ public class Delegate implements PropertyChangeListener {
                 }
                 colorArray[i] = new Color(color, color, color);
             }
+        }
+
+        private Color getColor(int value){
+
+            if(value == model.getMax_iterations()){
+                return Color.BLACK;
+            } else {
+                return Color.getHSBColor((float)value * 2.0f / (float)model.getMax_iterations(), 1.0f, 1.0f);
+            }
+
+
+
         }
 
 
