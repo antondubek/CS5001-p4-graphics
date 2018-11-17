@@ -158,8 +158,20 @@ public class Delegate implements PropertyChangeListener {
         save.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String input = JOptionPane.showInputDialog("Please input name / path of file");
-                saveModel(input);
+//                String input = JOptionPane.showInputDialog("Please input name / path of file");
+//                saveModel(input);
+
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Specify a file to save");
+
+                int userSelection = fileChooser.showSaveDialog(mainFrame);
+
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
+                    File fileToSave = fileChooser.getSelectedFile();
+                    saveModel(fileToSave);
+                    System.out.println("Save as file: " + fileToSave.getAbsolutePath());
+                }
+
             }
         });
 
@@ -173,8 +185,16 @@ public class Delegate implements PropertyChangeListener {
         mainFrame.setJMenuBar(menu);
     }
 
-    private void saveModel(String input) {
-        try(FileOutputStream fOut = new FileOutputStream(new File(input));
+    private void saveModel(File fileToSave) {
+
+        String path = fileToSave.getAbsolutePath();
+
+        if(!path.endsWith(".txt")){
+            String newPath = path + ".txt";
+            fileToSave = new File(newPath);
+        }
+
+        try(FileOutputStream fOut = new FileOutputStream(fileToSave);
             ObjectOutputStream oOut = new ObjectOutputStream(fOut)){
 
             oOut.writeObject(model);
