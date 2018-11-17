@@ -12,7 +12,7 @@ import java.io.*;
 
 public class Delegate implements PropertyChangeListener {
 
-    private static final int FRAME_HEIGHT = 800;
+    private static final int FRAME_HEIGHT = 850;
     private static final int FRAME_WIDTH = 800;
 
     private Model model;
