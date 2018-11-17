@@ -1,10 +1,11 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.Line2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.sql.SQLOutput;
 
 public class Delegate implements PropertyChangeListener {
 
@@ -19,15 +20,15 @@ public class Delegate implements PropertyChangeListener {
     private JButton drawBtn;
     private JButton undoBtn;
     private JButton redoBtn;
-    public int[][] points;
+    private JButton changeIterationsBtn;
+    private JTextField iterationsTV;
+
 
     public Delegate(Model model){
         this.model = model;
         this.mainFrame = new JFrame();
         menu = new JMenuBar();
         toolbar = new JToolBar();
-
-        points = model.getPoints();
 
         panel = new Panel(this);
         mainFrame.add(panel);
@@ -43,11 +44,12 @@ public class Delegate implements PropertyChangeListener {
 
 
     private void setupToolbar(){
-        drawBtn = new JButton("ReDraw");
+        drawBtn = new JButton("Reset");
         drawBtn.addActionListener(new ActionListener(){     // to translate event for this button into appropriate model method call
             public void actionPerformed(ActionEvent e){
                 // should  call method in model class if you want it to affect model
-                panel.paintComponent(panel.getGraphics());
+                model.resetToDefault();
+                panel.repaint();
             }
         });
 
@@ -55,7 +57,7 @@ public class Delegate implements PropertyChangeListener {
         undoBtn.addActionListener(new ActionListener(){     // to translate event for this button into appropriate model method call
             public void actionPerformed(ActionEvent e){
                 // should  call method in model class if you want it to affect model
-                panel.paintComponent(panel.getGraphics());
+                panel.repaint();
             }
         });
 
@@ -63,26 +65,42 @@ public class Delegate implements PropertyChangeListener {
         redoBtn.addActionListener(new ActionListener(){     // to translate event for this button into appropriate model method call
             public void actionPerformed(ActionEvent e){
                 // should  call method in model class if you want it to affect model
-                panel.paintComponent(panel.getGraphics());
+                panel.repaint();
             }
         });
+
+        changeIterationsBtn = new JButton("Change Max Iterations");
+        changeIterationsBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String input = JOptionPane.showInputDialog("Please input new Max Iterations");
+                model.setMax_iterations(Integer.parseInt(input));
+                panel.repaint();
+            }
+        });
+
+        iterationsTV = new JTextField("Current Max Iterations = " + model.getMax_iterations());
 
         // add buttons, label, and textfield to the toolbar
         toolbar.add(drawBtn);
         toolbar.add(undoBtn);
         toolbar.add(redoBtn);
+        toolbar.add(changeIterationsBtn);
+        toolbar.add(iterationsTV);
 
         // add toolbar to north of main frame
         mainFrame.add(toolbar, BorderLayout.NORTH);
     }
 
+    // Property change listener which is called when events fired from the model
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                points = model.getPoints();
-                panel.paintComponent(panel.getGraphics());
+                panel.repaint();
+                iterationsTV.setText("Current Max Iterations = " + model.getMax_iterations());
+                //panel.paintComponent(panel.getGraphics());
             }
         });
     }
@@ -99,10 +117,12 @@ public class Delegate implements PropertyChangeListener {
         private int width;
         private int height;
 
-        private Color[] colorArray = new Color[48];
+        private Color[] colorArray = new Color[model.getMax_iterations()];
 
         private final Color black = new Color(200, 200, 255);
         private final Color blue = Color.blue;
+
+        private int[][] points;
 
         Panel(Delegate delegate){
             this.delegate = delegate;
@@ -117,16 +137,16 @@ public class Delegate implements PropertyChangeListener {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
 
-            int[][] points = delegate.points;
+            int[][] points = model.getPoints();
 
             System.out.println("Redrawn!!");
             //g.setColor(Color.BLACK);
 
 
-            for(int y = 0; y< 800; y++){
-                for(int x=0; x<800; x++){
-                    if(points[y][x] >= 2){
-                        g.setColor(colorArray[points[y][x] % colorArray.length]);
+            for(int y = 0; y< model.resolution; y++){
+                for(int x=0; x<model.resolution; x++){
+                    if(points[y][x] >= model.getMax_iterations()){
+                        //g.setColor(colorArray[points[y][x] % colorArray.length]);
                         g.drawLine(x,y,x,y);
                     }
                 }
@@ -174,6 +194,12 @@ public class Delegate implements PropertyChangeListener {
             public void mouseReleased(MouseEvent e) {
                 drawing = false;
                 zoom = false;
+
+                System.out.println("Mouse clicked =" + mousePress);
+                System.out.println("Mouse released = "+ e.getPoint());
+
+                //Pass the point clicked and the point released
+                model.setZoom(mousePress, e.getPoint());
                 repaint();
             }
 

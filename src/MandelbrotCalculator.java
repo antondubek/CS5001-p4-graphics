@@ -48,7 +48,7 @@ public class MandelbrotCalculator {
     protected static final double INITIAL_MAX_REAL = 1.0;
     protected static final double INITIAL_MIN_IMAGINARY = -1.2;
     protected static final double INITIAL_MAX_IMAGINARY = 1.25;
-    protected static final int INITIAL_MAX_ITERATIONS = 50;
+    protected static final int INITIAL_MAX_ITERATIONS = 200;
 
     // Default parameter values
     protected static final double DEFAULT_RADIUS_SQUARED = 4.0;
@@ -108,6 +108,8 @@ public class MandelbrotCalculator {
      * @return the 2-D integer array mandelbrotData[yResolution][xResolution] containing the for each [y][x] pixel the number of iterations needed until Z escaped the bounding radius, or maxIterations otherwise.
      */
     public int[][] calcMandelbrotSet(int xResolution, int yResolution, double minReal, double maxReal, double minImaginary, double maxImaginary, int maxIterations, double radiusSquared){
+
+        System.out.println("Recalculating MandleBrot");
         int[][] mandelbrotData = new int[yResolution][xResolution];
         double realRange = maxReal - minReal;
 
