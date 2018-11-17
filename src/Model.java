@@ -69,6 +69,38 @@ public class Model {
 
     }
 
+    public void pan(Point startPoint, Point endPoint){
+        int startX = startPoint.x;
+        int startY = startPoint.y;
+        int finishX = endPoint.x;
+        int finishY = endPoint.y;
+
+        System.out.println(startPoint);
+        System.out.println(endPoint);
+
+        int lengthX = startX - finishX;
+        int lengthY = startY - finishY;
+
+//        System.out.println("LengthX = " + lengthX);
+//        System.out.println("LengthY = " + lengthY);
+
+        // newValue = (((oldValue - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) + newMin
+        double lengthReal = min_real - ((((lengthX) * (max_real- min_real))/resolution) + min_real);
+
+        // newValue = (((oldValue - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) + newMin
+        double lengthImaginary = min_imaginary- (((lengthY-0.0) * (max_imaginary-min_imaginary)) / resolution + min_imaginary);
+
+//        System.out.println("LengthReal = " + lengthReal);
+//        System.out.println("LengthImag = " + lengthImaginary);
+
+        min_real -= lengthReal;
+        max_real -= lengthReal;
+        min_imaginary -= lengthImaginary;
+        max_imaginary -= lengthImaginary;
+
+        notifier.firePropertyChange("theText", "test", "test");
+    }
+
     public void resetToDefault(){
         min_real = MandelbrotCalculator.INITIAL_MIN_REAL;
         max_real = MandelbrotCalculator.INITIAL_MAX_REAL;

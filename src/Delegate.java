@@ -18,7 +18,7 @@ public class Delegate implements PropertyChangeListener {
     private JMenuBar menu;
     private JToolBar toolbar;
     private JButton drawBtn, undoBtn, redoBtn, changeIterationsBtn, toggleModeBtn;
-    private JTextField iterationsTV;
+    private JTextArea iterationsTV;
 
 
     public Delegate(Model model){
@@ -76,7 +76,9 @@ public class Delegate implements PropertyChangeListener {
             }
         });
 
-        iterationsTV = new JTextField("Current Max Iterations = " + model.getMax_iterations());
+        iterationsTV = new JTextArea("Current Max Iterations = " + model.getMax_iterations());
+        iterationsTV.setEditable(false);
+        iterationsTV.setLineWrap(true);
 
         toggleModeBtn = new JButton("Toggle Mode");
         toggleModeBtn.addActionListener(new ActionListener() {
@@ -220,15 +222,16 @@ public class Delegate implements PropertyChangeListener {
             @Override
             public void mouseReleased(MouseEvent e) {
                 drawing = false;
+                Point mouseReleased = e.getPoint();
 
                 System.out.println("Mouse clicked =" + mousePress);
-                System.out.println("Mouse released = "+ e.getPoint());
+                System.out.println("Mouse released = "+ mouseReleased);
 
                 //Pass the point clicked and the point released
                 if(zoom){
-                    model.setZoom(mousePress, e.getPoint());
+                    model.setZoom(mousePress, mouseReleased);
                 } else {
-                    // model.pan
+                    model.pan(mousePress, mouseReleased);
                 }
                 repaint();
             }
