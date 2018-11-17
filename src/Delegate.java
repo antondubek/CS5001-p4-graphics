@@ -128,7 +128,6 @@ public class Delegate implements PropertyChangeListener {
             @Override
             public void run() {
                 panel.repaint();
-                iterationsTV.setText("Current Max Iterations = " + model.getMax_iterations());
                 changeIterationsBtn.setText("Iterations: " + model.getMax_iterations());
                 //panel.paintComponent(panel.getGraphics());
             }
