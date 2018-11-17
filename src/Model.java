@@ -1,9 +1,10 @@
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Model {
+public class Model implements Serializable {
 
     private PropertyChangeSupport notifier;
     private MandelbrotCalculator mandelCalc;
@@ -66,10 +67,6 @@ public class Model {
         log_min_imaginary.add(this.min_imaginary);
         log_max_imaginary.add(this.max_imaginary);
         log_max_iterations.add(this.max_iterations);
-
-        for(Double somenumber: log_min_real){
-            System.out.println("MinReal UpdateLog = " +somenumber);
-        }
     }
 
     public int getMax_iterations() {
@@ -196,5 +193,7 @@ public class Model {
 
         return madelbrotData;
     }
+
+
 
 }

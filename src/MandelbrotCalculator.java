@@ -27,6 +27,8 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 */
 
+import java.io.Serializable;
+
 /**
  * The MandelbrotCalculator class contains methods which establish the Mandelbrot set.
  * The calcMandelbrotSet method below iterates over X,Y positions and establishes for specified parameter values a 2-D array containing
@@ -41,7 +43,7 @@ either expressed or implied, of the FreeBSD Project.
  * @author jon.lewis@st-andrews.ac.uk
  *
  */
-public class MandelbrotCalculator {
+public class MandelbrotCalculator implements Serializable {
 
     // Initial parameter values
     protected static final double INITIAL_MIN_REAL = -2.0;

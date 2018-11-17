@@ -1,8 +1,12 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.*;
 
 public class Delegate implements PropertyChangeListener {
 
@@ -29,10 +33,11 @@ public class Delegate implements PropertyChangeListener {
         mainFrame.add(panel);
 
         setupToolbar();
+        setupMenu();
+
         mainFrame.setSize (FRAME_WIDTH, FRAME_HEIGHT);
         mainFrame.setVisible(true);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
 
         model.addObserver(this);
     }
@@ -119,6 +124,73 @@ public class Delegate implements PropertyChangeListener {
 
         // add toolbar to north of main frame
         mainFrame.add(toolbar, BorderLayout.NORTH);
+    }
+
+
+    private void setupMenu(){
+        JMenu file = new JMenu("File");
+        JMenuItem load = new JMenuItem("Load");
+        JMenuItem save = new JMenuItem("Save");
+        JMenuItem capture = new JMenuItem("Capture");
+        file.add(load);
+        file.add(save);
+        file.add(capture);
+        menu.add(file);
+
+        load.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                int result = fileChooser.showOpenDialog(mainFrame);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    // user selects a file
+                    File selectedFile = fileChooser.getSelectedFile();
+                    System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+                    loadFile(selectedFile);
+
+                    panel.repaint();
+                }
+            }
+        });
+
+        save.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String input = JOptionPane.showInputDialog("Please input name / path of file");
+                saveModel(input);
+            }
+        });
+
+        capture.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+
+        mainFrame.setJMenuBar(menu);
+    }
+
+    private void saveModel(String input) {
+        try(FileOutputStream fOut = new FileOutputStream(new File(input));
+            ObjectOutputStream oOut = new ObjectOutputStream(fOut)){
+
+            oOut.writeObject(model);
+
+        } catch(Exception e){
+            System.out.println("Delegate saveModel: " + e.getMessage());
+        }
+    }
+
+    private void loadFile(File selectedFile){
+        try(FileInputStream fIn = new FileInputStream(selectedFile);
+            ObjectInputStream oIn = new ObjectInputStream(fIn)){
+
+            this.model = (Model) oIn.readObject();
+
+        } catch(Exception e){
+            System.out.println("Delegate saveModel: " + e.getMessage());
+        }
     }
 
     // Property change listener which is called when events fired from the model
