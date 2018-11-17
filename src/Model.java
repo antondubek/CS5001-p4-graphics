@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 
 public class Model {
 
@@ -15,10 +16,56 @@ public class Model {
     private int max_iterations;
     public int resolution = 800;
 
+    private ArrayList<Double> log_min_real;
+    private ArrayList<Double> log_max_real;
+    private ArrayList<Double> log_min_imaginary;
+    private ArrayList<Double> log_max_imaginary;
+    private ArrayList<Integer> log_max_iterations;
+
+    private int logCounter;
+
+
+
     public Model(){
         mandelCalc = new MandelbrotCalculator();
         notifier = new PropertyChangeSupport(this);
         resetToDefault();
+
+    }
+
+    public void undo(){
+        logCounter--;
+        min_real = log_min_real.get(logCounter);
+        max_real = log_max_real.get(logCounter);
+        min_imaginary = log_min_imaginary.get(logCounter);
+        max_imaginary = log_max_imaginary.get(logCounter);
+        max_iterations = log_max_iterations.get(logCounter);
+
+        notifier.firePropertyChange("theText", "test", "test");
+    }
+
+    public void redo(){
+        logCounter++;
+        min_real = log_min_real.get(logCounter);
+        max_real = log_max_real.get(logCounter);
+        min_imaginary = log_min_imaginary.get(logCounter);
+        max_imaginary = log_max_imaginary.get(logCounter);
+        max_iterations = log_max_iterations.get(logCounter);
+
+        notifier.firePropertyChange("theText", "test", "test");
+    }
+
+    private void updateLog(){
+        logCounter++;
+        log_min_real.add(this.min_real);
+        log_max_real.add(this.max_real);
+        log_min_imaginary.add(this.min_imaginary);
+        log_max_imaginary.add(this.max_imaginary);
+        log_max_iterations.add(this.max_iterations);
+
+        for(Double somenumber: log_min_real){
+            System.out.println("MinReal UpdateLog = " +somenumber);
+        }
     }
 
     public int getMax_iterations() {
@@ -27,8 +74,13 @@ public class Model {
 
     public void setMax_iterations(int max_iterations) {
         this.max_iterations = max_iterations;
+        updateLog();
         notifier.firePropertyChange("updateIterations", 0, max_iterations);
 
+    }
+
+    public double getRatio(){
+        return (MandelbrotCalculator.INITIAL_MAX_REAL - MandelbrotCalculator.INITIAL_MIN_REAL)/(max_real-min_real);
     }
 
     public void addObserver(PropertyChangeListener listener){
@@ -55,15 +107,17 @@ public class Model {
         //map endy to mandlebrot
         double newMaxImaginary = (((finishY) * (max_imaginary - (min_imaginary))) / (resolution)) + (min_imaginary);
 
-        System.out.println("NewMinReal = " + newMinReal);
-        System.out.println("NewMaxReal = " + newMaxReal);
-        System.out.println("NewMinImaginary = " + newMinImaginary);
-        System.out.println("NewMaxImaginary = " + newMaxImaginary);
+//        System.out.println("NewMinReal = " + newMinReal);
+//        System.out.println("NewMaxReal = " + newMaxReal);
+//        System.out.println("NewMinImaginary = " + newMinImaginary);
+//        System.out.println("NewMaxImaginary = " + newMaxImaginary);
 
         min_real = newMinReal;
         max_real = newMaxReal;
         min_imaginary = newMinImaginary;
         max_imaginary = newMaxImaginary;
+
+        updateLog();
 
         notifier.firePropertyChange("theText", "test", "test");
 
@@ -98,6 +152,8 @@ public class Model {
         min_imaginary -= lengthImaginary;
         max_imaginary -= lengthImaginary;
 
+        updateLog();
+
         notifier.firePropertyChange("theText", "test", "test");
     }
 
@@ -107,6 +163,19 @@ public class Model {
         min_imaginary = MandelbrotCalculator.INITIAL_MIN_IMAGINARY;
         max_imaginary = MandelbrotCalculator.INITIAL_MAX_IMAGINARY;
         max_iterations = MandelbrotCalculator.INITIAL_MAX_ITERATIONS;
+
+        log_min_real = new ArrayList<>();
+        log_max_real = new ArrayList<>();
+        log_min_imaginary = new ArrayList<>();
+        log_max_imaginary = new ArrayList<>();
+        log_max_iterations = new ArrayList<>();
+
+        logCounter = 0;
+        log_min_real.add(this.min_real);
+        log_max_real.add(this.max_real);
+        log_min_imaginary.add(this.min_imaginary);
+        log_max_imaginary.add(this.max_imaginary);
+        log_max_iterations.add(this.max_iterations);
 
         notifier.firePropertyChange("theText", "test", "test");
     }

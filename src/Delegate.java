@@ -1,9 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -17,7 +14,8 @@ public class Delegate implements PropertyChangeListener {
     private Panel panel;
     private JMenuBar menu;
     private JToolBar toolbar;
-    private JButton drawBtn, undoBtn, redoBtn, changeIterationsBtn, toggleModeBtn;
+    private JButton drawBtn, undoBtn, redoBtn, changeIterationsBtn;
+    private JCheckBox toggleModeBtn;
     private JTextArea iterationsTV;
 
 
@@ -54,6 +52,7 @@ public class Delegate implements PropertyChangeListener {
         undoBtn.addActionListener(new ActionListener(){     // to translate event for this button into appropriate model method call
             public void actionPerformed(ActionEvent e){
                 // should  call method in model class if you want it to affect model
+                model.undo();
                 panel.repaint();
             }
         });
@@ -62,11 +61,12 @@ public class Delegate implements PropertyChangeListener {
         redoBtn.addActionListener(new ActionListener(){     // to translate event for this button into appropriate model method call
             public void actionPerformed(ActionEvent e){
                 // should  call method in model class if you want it to affect model
+                model.redo();
                 panel.repaint();
             }
         });
 
-        changeIterationsBtn = new JButton("Change Max Iterations");
+        changeIterationsBtn = new JButton("Iterations: " + model.getMax_iterations());
         changeIterationsBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -80,14 +80,15 @@ public class Delegate implements PropertyChangeListener {
         iterationsTV.setEditable(false);
         iterationsTV.setLineWrap(true);
 
-        toggleModeBtn = new JButton("Toggle Mode");
+        toggleModeBtn = new JCheckBox("Pan", false);
         toggleModeBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(panel.zoom == false){
-                    panel.zoom = true;
-                } else {
+                JCheckBox cb = (JCheckBox) e.getSource();
+                if(cb.isSelected()){
                     panel.zoom = false;
+                } else {
+                    panel.zoom = true;
                 }
             }
         });
@@ -98,8 +99,9 @@ public class Delegate implements PropertyChangeListener {
         toolbar.add(undoBtn);
         toolbar.add(redoBtn);
         toolbar.add(changeIterationsBtn);
-        toolbar.add(iterationsTV);
         toolbar.add(toggleModeBtn);
+        //toolbar.add(iterationsTV);
+
 
         // add toolbar to north of main frame
         mainFrame.add(toolbar, BorderLayout.NORTH);
@@ -113,6 +115,7 @@ public class Delegate implements PropertyChangeListener {
             public void run() {
                 panel.repaint();
                 iterationsTV.setText("Current Max Iterations = " + model.getMax_iterations());
+                changeIterationsBtn.setText("Iterations: " + model.getMax_iterations());
                 //panel.paintComponent(panel.getGraphics());
             }
         });
@@ -143,7 +146,7 @@ public class Delegate implements PropertyChangeListener {
 
         Panel(Delegate delegate){
             this.delegate = delegate;
-            setPreferredSize(new Dimension(800,800));
+            //setPreferredSize(new Dimension(600,600));
             MyMouseAdapter mouseAdapter = new MyMouseAdapter();
             addMouseListener(mouseAdapter);
             addMouseMotionListener(mouseAdapter);
@@ -158,7 +161,8 @@ public class Delegate implements PropertyChangeListener {
 
             System.out.println("Redrawn!!");
             //g.setColor(Color.BLACK);
-
+            String ratio = "Zoom x" + model.getRatio();
+            g.drawString(ratio, model.resolution/10, model.resolution/10);
 
             for(int y = 0; y< model.resolution; y++){
                 for(int x=0; x<model.resolution; x++){
@@ -168,6 +172,7 @@ public class Delegate implements PropertyChangeListener {
                     }
                 }
             }
+
 
             if (drawing && zoom) {
                 g.setColor(Color.RED);
@@ -193,11 +198,6 @@ public class Delegate implements PropertyChangeListener {
 
         private class MyMouseAdapter extends MouseAdapter {
             private Point mousePress = null;
-//            private Panel panel;
-//
-//            public MyMouseAdapter(Panel panel) {
-//                this.panel = panel;
-//            }
 
             @Override
             public void mousePressed(MouseEvent e) {
