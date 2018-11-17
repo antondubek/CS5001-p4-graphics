@@ -12,8 +12,8 @@ import java.io.*;
 
 public class Delegate implements PropertyChangeListener {
 
-    private static final int FRAME_HEIGHT = 1000;
-    private static final int FRAME_WIDTH = 1000;
+    private static final int FRAME_HEIGHT = 800;
+    private static final int FRAME_WIDTH = 800;
 
     private Model model;
     private JFrame mainFrame;
@@ -178,7 +178,16 @@ public class Delegate implements PropertyChangeListener {
         capture.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                saveImage();
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Specify a file to save");
+
+                int userSelection = fileChooser.showSaveDialog(mainFrame);
+
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
+                    File fileToSave = fileChooser.getSelectedFile();
+                    saveImage(fileToSave);
+                    System.out.println("Save image as file: " + fileToSave.getAbsolutePath());
+                }
             }
         });
 
@@ -215,7 +224,14 @@ public class Delegate implements PropertyChangeListener {
         }
     }
 
-    private void saveImage(){
+    private void saveImage(File fileToSave){
+        String path = fileToSave.getAbsolutePath();
+
+        if(!path.endsWith(".jpeg")){
+            String newPath = path + ".jpeg";
+            fileToSave = new File(newPath);
+        }
+
         BufferedImage imagebuf=null;;
         try {
             imagebuf = new Robot().createScreenCapture(panel.bounds());
@@ -226,7 +242,7 @@ public class Delegate implements PropertyChangeListener {
         Graphics2D graphics2D = imagebuf.createGraphics();
         panel.paint(graphics2D);
         try {
-            ImageIO.write(imagebuf,"jpeg", new File("save1.jpeg"));
+            ImageIO.write(imagebuf,"jpeg", fileToSave);
         } catch (Exception e) {
             // TODO Auto-generated catch block
             System.out.println("error");
