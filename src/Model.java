@@ -34,23 +34,27 @@ public class Model {
     }
 
     public void undo(){
-        logCounter--;
-        min_real = log_min_real.get(logCounter);
-        max_real = log_max_real.get(logCounter);
-        min_imaginary = log_min_imaginary.get(logCounter);
-        max_imaginary = log_max_imaginary.get(logCounter);
-        max_iterations = log_max_iterations.get(logCounter);
+        if(logCounter - 1 >= 0) {
+            logCounter--;
+            min_real = log_min_real.get(logCounter);
+            max_real = log_max_real.get(logCounter);
+            min_imaginary = log_min_imaginary.get(logCounter);
+            max_imaginary = log_max_imaginary.get(logCounter);
+            max_iterations = log_max_iterations.get(logCounter);
+        }
 
         notifier.firePropertyChange("theText", "test", "test");
     }
 
     public void redo(){
-        logCounter++;
-        min_real = log_min_real.get(logCounter);
-        max_real = log_max_real.get(logCounter);
-        min_imaginary = log_min_imaginary.get(logCounter);
-        max_imaginary = log_max_imaginary.get(logCounter);
-        max_iterations = log_max_iterations.get(logCounter);
+        if(logCounter + 1 < log_min_real.size()) {
+            logCounter++;
+            min_real = log_min_real.get(logCounter);
+            max_real = log_max_real.get(logCounter);
+            min_imaginary = log_min_imaginary.get(logCounter);
+            max_imaginary = log_max_imaginary.get(logCounter);
+            max_iterations = log_max_iterations.get(logCounter);
+        }
 
         notifier.firePropertyChange("theText", "test", "test");
     }
