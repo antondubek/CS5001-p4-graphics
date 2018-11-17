@@ -252,12 +252,21 @@ public class Delegate implements PropertyChangeListener {
     // Property change listener which is called when events fired from the model
     @Override
     public void propertyChange(PropertyChangeEvent event) {
+
+        if(event.getSource() == model && event.getPropertyName().equals("updateIterations")){
+            SwingUtilities.invokeLater(new Runnable(){
+                public void run(){
+                    changeIterationsBtn.setText( event.getNewValue().toString());
+                    panel.repaint();
+                }
+            });
+        }
+
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                changeIterationsBtn.setText("Iterations: " + Integer.toString(model.getMax_iterations()));
                 panel.repaint();
-                changeIterationsBtn.setText("Iterations: " + model.getMax_iterations());
-                //panel.paintComponent(panel.getGraphics());
             }
         });
     }
