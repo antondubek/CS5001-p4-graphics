@@ -54,7 +54,7 @@ public class Model implements Serializable {
             setValues(logCounter);
         }
 
-        // TODO need to make these more functional
+        // TODO need to make these more functional send new max iterations?
         notifier.firePropertyChange("theText", "test", "test");
     }
 

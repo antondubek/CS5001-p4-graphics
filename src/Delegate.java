@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
+import java.util.Random;
 
 /**
  * Delegate class which contains the view and controller connected to the model.
@@ -25,7 +26,7 @@ public class Delegate implements PropertyChangeListener {
     private Panel panel;
     private JMenuBar menuBar;
     private JToolBar toolbar;
-    private JButton drawBtn, undoBtn, redoBtn, changeIterationsBtn;
+    private JButton drawBtn, undoBtn, redoBtn, changeIterationsBtn, changeColor;
     private JCheckBox toggleModeBtn, toggleRatio, toggleColor;
 
 
@@ -142,6 +143,19 @@ public class Delegate implements PropertyChangeListener {
             }
         });
 
+        // Random color, randomises the hue fixed value so that the color pattern changes
+        changeColor = new JButton("Change Colour");
+        changeColor.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Random r = new Random();
+                float random = 0.0f + r.nextFloat() * (360.0f - 0.0f);
+                panel.colorHue = random;
+
+                panel.repaint();
+            }
+        });
+
 
         // add buttons and checkboxes to the toolbar
         toolbar.add(drawBtn);
@@ -151,6 +165,7 @@ public class Delegate implements PropertyChangeListener {
         toolbar.add(toggleModeBtn);
         toolbar.add(toggleRatio);
         toolbar.add(toggleColor);
+        toolbar.add(changeColor);
 
 
         // add toolbar to the top of the main frame
@@ -347,6 +362,7 @@ public class Delegate implements PropertyChangeListener {
         private boolean drawing = false;
         private boolean displayRatio = false;
         private boolean color = true;
+        private float colorHue = 3.0f;
 
         private int clickX;
         private int clickY;
@@ -404,7 +420,7 @@ public class Delegate implements PropertyChangeListener {
             // If ratio is wanted then display the zoom ratio text.
             if (displayRatio) {
                 String ratio = "Zoom x" + model.getRatio();
-                g.setColor(Color.WHITE);
+                g.setColor(Color.BLACK);
                 g.setFont(new Font("TimesRoman", Font.BOLD, 22));
                 g.drawString(ratio, model.resolution / 10, model.resolution / 10);
             }
@@ -419,7 +435,7 @@ public class Delegate implements PropertyChangeListener {
             if (value == model.getMax_iterations()) {
                 return Color.BLACK;
             } else {
-                return Color.getHSBColor((float) value * 2.0f / (float) model.getMax_iterations(), 1.0f, 1.0f);
+                return Color.getHSBColor((float) value * colorHue / (float) model.getMax_iterations(), 1.0f, 1.0f);
             }
         }
 
