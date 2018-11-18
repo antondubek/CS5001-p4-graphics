@@ -310,11 +310,6 @@ public class Delegate implements PropertyChangeListener {
             System.out.println("Redrawn!!");
             //g.setColor(Color.BLACK);
 
-            if(displayRatio) {
-                String ratio = "Zoom x" + model.getRatio();
-                g.drawString(ratio, model.resolution / 10, model.resolution / 10);
-            }
-
             for(int y = 0; y< model.resolution; y++){
                 for(int x=0; x<model.resolution; x++){
                         g.setColor(getColor(points[y][x]));
@@ -329,6 +324,14 @@ public class Delegate implements PropertyChangeListener {
             } else if (drawing && !zoom) {
                 g.setColor(Color.RED);
                 g.drawLine(clickX,clickY,xCurrent,yCurrent);
+            }
+
+            if(displayRatio) {
+                String ratio = "Zoom x" + model.getRatio();
+                System.out.println(ratio);
+                g.setColor(Color.WHITE);
+                g.setFont(new Font("TimesRoman", Font.BOLD, 22));
+                g.drawString(ratio, model.resolution / 10, model.resolution / 10);
             }
 
 
