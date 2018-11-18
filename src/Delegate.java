@@ -32,6 +32,7 @@ public class Delegate implements PropertyChangeListener {
     /**
      * Constructor, saves the model passed to it, creates a new frame, menubar and toolbar and panel.
      * Does general setting up.
+     *
      * @param model Model to connect to and display data from.
      */
     public Delegate(Model model) {
@@ -40,7 +41,7 @@ public class Delegate implements PropertyChangeListener {
         menuBar = new JMenuBar();
         toolbar = new JToolBar();
 
-        panel = new Panel(this);
+        panel = new Panel();
         mainFrame.add(panel);
 
         setupToolbar();
@@ -230,6 +231,7 @@ public class Delegate implements PropertyChangeListener {
 
     /**
      * Given a file object, method will serialize model object and save it to that file as .txt file.
+     *
      * @param fileToSave File containing path of location to save to.
      */
     private void saveModel(File fileToSave) {
@@ -256,6 +258,7 @@ public class Delegate implements PropertyChangeListener {
 
     /**
      * Given a file, create an input stream and write the serialized model object back to the model variable.
+     *
      * @param selectedFile File containing serialized model object.
      */
     private void loadFile(File selectedFile) {
@@ -271,6 +274,7 @@ public class Delegate implements PropertyChangeListener {
 
     /**
      * Given a file path, method will screencapture the currently drawn panel and save it as a .jpeg file.
+     *
      * @param fileToSave File containing location to save to.
      */
     private void saveImage(File fileToSave) {
@@ -307,10 +311,13 @@ public class Delegate implements PropertyChangeListener {
 
     /**
      * Property change listener which is called when events are received from the model.
+     *
      * @param event Event fired from the model.
      */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
+
+        //TODO make these more intuitive and useful.
 
         if (event.getSource() == model && event.getPropertyName().equals("updateIterations")) {
             SwingUtilities.invokeLater(new Runnable() {
@@ -330,10 +337,12 @@ public class Delegate implements PropertyChangeListener {
         });
     }
 
-
+    /**
+     * Panel class which is a JPanel, this contains all methods to display the Mandelbrot and allow users to draw
+     * the zoom box and the pan line.
+     * It uses booleans to determine whether zoom needs to be shown as well as if it needs to use color.
+     */
     class Panel extends JPanel {
-        private Delegate delegate;
-        private Rectangle rect = null;
         private boolean zoom = true;
         private boolean drawing = false;
         private boolean displayRatio = false;
@@ -348,25 +357,31 @@ public class Delegate implements PropertyChangeListener {
         private int width;
         private int height;
 
-        private int[][] points;
-
-        Panel(Delegate delegate) {
-            this.delegate = delegate;
+        /**
+         * Constructor to create the panel and add a mouse listener for the zoom and pan.
+         */
+        Panel() {
             MyMouseAdapter mouseAdapter = new MyMouseAdapter();
             addMouseListener(mouseAdapter);
             addMouseMotionListener(mouseAdapter);
         }
 
+        /**
+         * Paint method which gets the points of the Mandelbrot and draws them as zero length lines.
+         * Also displays the zoom and display ratio if needed.
+         * @param g
+         */
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
 
+            // Get the points of the Mandelbrot
             int[][] points = model.getPoints();
 
-            //System.out.println("Redrawn!!");
-
+            // For all the points in the mandelbrot set, draw them as a zero length line or 1px
             for (int y = 0; y < model.resolution; y++) {
                 for (int x = 0; x < model.resolution; x++) {
+                    //If color is wanted add color otherwise just use black and white
                     if (color) {
                         g.setColor(getColor(points[y][x]));
                         g.drawLine(x, y, x, y);
@@ -377,7 +392,7 @@ public class Delegate implements PropertyChangeListener {
                 }
             }
 
-
+            // If the user is drawing and zoom is selected, display the box, otherwise draw the pan line
             if (drawing && zoom) {
                 g.setColor(Color.RED);
                 g.drawRect(x, y, width, height);
@@ -386,16 +401,20 @@ public class Delegate implements PropertyChangeListener {
                 g.drawLine(clickX, clickY, xCurrent, yCurrent);
             }
 
+            // If ratio is wanted then display the zoom ratio text.
             if (displayRatio) {
                 String ratio = "Zoom x" + model.getRatio();
                 g.setColor(Color.WHITE);
                 g.setFont(new Font("TimesRoman", Font.BOLD, 22));
                 g.drawString(ratio, model.resolution / 10, model.resolution / 10);
             }
-
-
         }
 
+        /**
+         * Uses HSB color space model to map the mandelbrot value given to a hue color.
+         * @param value Mandelbrot no of iterations reached value.
+         * @return HSB color object to use for the value given.
+         */
         private Color getColor(int value) {
             if (value == model.getMax_iterations()) {
                 return Color.BLACK;
@@ -404,10 +423,13 @@ public class Delegate implements PropertyChangeListener {
             }
         }
 
-
+        /**
+         * Mouse adaptor to process the user clicks on the panel.
+         */
         private class MyMouseAdapter extends MouseAdapter {
             private Point mousePress = null;
 
+            // If the user presses down on the mouse, get the point and save it
             @Override
             public void mousePressed(MouseEvent e) {
                 mousePress = e.getPoint();
@@ -415,6 +437,8 @@ public class Delegate implements PropertyChangeListener {
                 clickY = mousePress.y;
             }
 
+            // If the user starts to drag the mouse, then calculate the length and width needed to draw a rectangle
+            // from the initial point clicked to the current point.
             @Override
             public void mouseDragged(MouseEvent e) {
                 drawing = true;
@@ -425,16 +449,14 @@ public class Delegate implements PropertyChangeListener {
                 width = Math.abs(mousePress.x - xCurrent);
                 height = Math.abs(mousePress.y - yCurrent);
 
-                repaint();
+                repaint(); // Call repaint to make sure the box drawn updates in real time.
             }
 
+            // When the user releases, get the point of release and call the methods in the model.
             @Override
             public void mouseReleased(MouseEvent e) {
                 drawing = false;
                 Point mouseReleased = e.getPoint();
-
-                System.out.println("Mouse clicked =" + mousePress);
-                System.out.println("Mouse released = " + mouseReleased);
 
                 //Pass the point clicked and the point released
                 if (zoom) {
