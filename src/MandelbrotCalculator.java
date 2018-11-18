@@ -111,7 +111,6 @@ public class MandelbrotCalculator implements Serializable {
      */
     public int[][] calcMandelbrotSet(int xResolution, int yResolution, double minReal, double maxReal, double minImaginary, double maxImaginary, int maxIterations, double radiusSquared){
 
-        System.out.println("Recalculating MandleBrot");
         int[][] mandelbrotData = new int[yResolution][xResolution];
         double realRange = maxReal - minReal;
 

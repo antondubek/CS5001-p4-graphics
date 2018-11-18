@@ -26,41 +26,40 @@ public class Model implements Serializable {
     private int logCounter;
 
 
-
-    public Model(){
+    public Model() {
         mandelCalc = new MandelbrotCalculator();
         notifier = new PropertyChangeSupport(this);
         resetToDefault();
 
     }
 
-    public void undo(){
-        if(logCounter - 1 >= 0) {
+    public void undo() {
+        if (logCounter - 1 >= 0) {
             logCounter--;
-            min_real = log_min_real.get(logCounter);
-            max_real = log_max_real.get(logCounter);
-            min_imaginary = log_min_imaginary.get(logCounter);
-            max_imaginary = log_max_imaginary.get(logCounter);
-            max_iterations = log_max_iterations.get(logCounter);
+            setValues(logCounter);
         }
 
         notifier.firePropertyChange("theText", "test", "test");
     }
 
-    public void redo(){
-        if(logCounter + 1 < log_min_real.size()) {
+    public void redo() {
+        if (logCounter + 1 < log_min_real.size()) {
             logCounter++;
-            min_real = log_min_real.get(logCounter);
-            max_real = log_max_real.get(logCounter);
-            min_imaginary = log_min_imaginary.get(logCounter);
-            max_imaginary = log_max_imaginary.get(logCounter);
-            max_iterations = log_max_iterations.get(logCounter);
+            setValues(logCounter);
         }
 
         notifier.firePropertyChange("theText", "test", "test");
     }
 
-    private void updateLog(){
+    private void setValues(int logCounter) {
+        min_real = log_min_real.get(logCounter);
+        max_real = log_max_real.get(logCounter);
+        min_imaginary = log_min_imaginary.get(logCounter);
+        max_imaginary = log_max_imaginary.get(logCounter);
+        max_iterations = log_max_iterations.get(logCounter);
+    }
+
+    private void updateLog() {
         logCounter++;
         log_min_real.add(this.min_real);
         log_max_real.add(this.max_real);
@@ -80,15 +79,15 @@ public class Model implements Serializable {
 
     }
 
-    public double getRatio(){
-        return (MandelbrotCalculator.INITIAL_MAX_REAL - MandelbrotCalculator.INITIAL_MIN_REAL)/(max_real-min_real);
+    public double getRatio() {
+        return (MandelbrotCalculator.INITIAL_MAX_REAL - MandelbrotCalculator.INITIAL_MIN_REAL) / (max_real - min_real);
     }
 
-    public void addObserver(PropertyChangeListener listener){
+    public void addObserver(PropertyChangeListener listener) {
         notifier.addPropertyChangeListener(listener);
     }
 
-    public void setZoom(Point startPoint, Point endPoint){
+    public void setZoom(Point startPoint, Point endPoint) {
         //here get passed the zoom coordinates and recalculate the Mandelbrot
         int startX = startPoint.x;
         int startY = startPoint.y;
@@ -97,21 +96,16 @@ public class Model implements Serializable {
 
         //map startx to mandlebrot
         // newValue = (((oldValue - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) + newMin
-        double newMinReal = (startX) * ((max_real-(min_real))/resolution) + (min_real);
+        double newMinReal = convertReal(startX);
 
         //map starty to mandlebrot
-        double newMinImaginary = (((startY) * (max_imaginary - (min_imaginary))) / (resolution)) + (min_imaginary);
+        double newMinImaginary = convertImaginary(startY);
 
         //map endx to mandlebrot
-        double newMaxReal = (finishX) * ((max_real-(min_real))/resolution) + (min_real);
+        double newMaxReal = convertReal(finishX);
 
         //map endy to mandlebrot
-        double newMaxImaginary = (((finishY) * (max_imaginary - (min_imaginary))) / (resolution)) + (min_imaginary);
-
-//        System.out.println("NewMinReal = " + newMinReal);
-//        System.out.println("NewMaxReal = " + newMaxReal);
-//        System.out.println("NewMinImaginary = " + newMinImaginary);
-//        System.out.println("NewMaxImaginary = " + newMaxImaginary);
+        double newMaxImaginary = convertImaginary(finishY);
 
         min_real = newMinReal;
         max_real = newMaxReal;
@@ -124,7 +118,15 @@ public class Model implements Serializable {
 
     }
 
-    public void pan(Point startPoint, Point endPoint){
+    private double convertReal(int pointX) {
+        return (pointX) * ((max_real - (min_real)) / resolution) + (min_real);
+    }
+
+    private double convertImaginary(int pointY) {
+        return (((pointY) * (max_imaginary - (min_imaginary))) / (resolution)) + (min_imaginary);
+    }
+
+    public void pan(Point startPoint, Point endPoint) {
         int startX = startPoint.x;
         int startY = startPoint.y;
         int finishX = endPoint.x;
@@ -136,17 +138,11 @@ public class Model implements Serializable {
         int lengthX = startX - finishX;
         int lengthY = startY - finishY;
 
-//        System.out.println("LengthX = " + lengthX);
-//        System.out.println("LengthY = " + lengthY);
 
-        // newValue = (((oldValue - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) + newMin
-        double lengthReal = min_real - ((((lengthX) * (max_real- min_real))/resolution) + min_real);
+        double lengthReal = min_real - convertReal(lengthX);
 
-        // newValue = (((oldValue - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) + newMin
-        double lengthImaginary = min_imaginary- (((lengthY-0.0) * (max_imaginary-min_imaginary)) / resolution + min_imaginary);
+        double lengthImaginary = min_imaginary - convertImaginary(lengthY);
 
-//        System.out.println("LengthReal = " + lengthReal);
-//        System.out.println("LengthImag = " + lengthImaginary);
 
         min_real -= lengthReal;
         max_real -= lengthReal;
@@ -158,7 +154,7 @@ public class Model implements Serializable {
         notifier.firePropertyChange("theText", "test", "test");
     }
 
-    public void resetToDefault(){
+    public void resetToDefault() {
         min_real = MandelbrotCalculator.INITIAL_MIN_REAL;
         max_real = MandelbrotCalculator.INITIAL_MAX_REAL;
         min_imaginary = MandelbrotCalculator.INITIAL_MIN_IMAGINARY;
@@ -193,7 +189,6 @@ public class Model implements Serializable {
 
         return madelbrotData;
     }
-
 
 
 }

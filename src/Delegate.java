@@ -21,8 +21,7 @@ public class Delegate implements PropertyChangeListener {
     private JMenuBar menu;
     private JToolBar toolbar;
     private JButton drawBtn, undoBtn, redoBtn, changeIterationsBtn;
-    private JCheckBox toggleModeBtn, toggleRatio;
-    private JTextArea iterationsTV;
+    private JCheckBox toggleModeBtn, toggleRatio, toggleColor;
 
 
     public Delegate(Model model){
@@ -83,10 +82,6 @@ public class Delegate implements PropertyChangeListener {
             }
         });
 
-//        iterationsTV = new JTextArea("Current Max Iterations = " + model.getMax_iterations());
-//        iterationsTV.setEditable(false);
-//        iterationsTV.setLineWrap(true);
-
         toggleModeBtn = new JCheckBox("Pan", false);
         toggleModeBtn.addActionListener(new ActionListener() {
             @Override
@@ -114,6 +109,20 @@ public class Delegate implements PropertyChangeListener {
             }
         });
 
+        toggleColor = new JCheckBox("Color", true);
+        toggleColor.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox cb = (JCheckBox) e.getSource();
+                if(cb.isSelected()){
+                    panel.color = true;
+                } else {
+                    panel.color = false;
+                }
+                panel.repaint();
+            }
+        });
+
 
         // add buttons, label, and textfield to the toolbar
         toolbar.add(drawBtn);
@@ -122,6 +131,7 @@ public class Delegate implements PropertyChangeListener {
         toolbar.add(changeIterationsBtn);
         toolbar.add(toggleModeBtn);
         toolbar.add(toggleRatio);
+        toolbar.add(toggleColor);
 
 
         // add toolbar to north of main frame
@@ -143,11 +153,10 @@ public class Delegate implements PropertyChangeListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fileChooser = new JFileChooser();
-                int result = fileChooser.showOpenDialog(mainFrame);
-                if (result == JFileChooser.APPROVE_OPTION) {
-                    // user selects a file
+                int userSelection = fileChooser.showOpenDialog(mainFrame);
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
                     File selectedFile = fileChooser.getSelectedFile();
-                    System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+                    //System.out.println("Selected file: " + selectedFile.getAbsolutePath());
                     loadFile(selectedFile);
 
                     panel.repaint();
@@ -158,8 +167,6 @@ public class Delegate implements PropertyChangeListener {
         save.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                String input = JOptionPane.showInputDialog("Please input name / path of file");
-//                saveModel(input);
 
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("Specify a file to save");
@@ -169,7 +176,7 @@ public class Delegate implements PropertyChangeListener {
                 if (userSelection == JFileChooser.APPROVE_OPTION) {
                     File fileToSave = fileChooser.getSelectedFile();
                     saveModel(fileToSave);
-                    System.out.println("Save as file: " + fileToSave.getAbsolutePath());
+                    //System.out.println("Save as file: " + fileToSave.getAbsolutePath());
                 }
 
             }
@@ -232,20 +239,18 @@ public class Delegate implements PropertyChangeListener {
             fileToSave = new File(newPath);
         }
 
-        BufferedImage imagebuf=null;;
+        BufferedImage imagebuffer=null;;
         try {
-            imagebuf = new Robot().createScreenCapture(panel.bounds());
-        } catch (AWTException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+            imagebuffer = new Robot().createScreenCapture(panel.getBounds());
+        } catch(Exception e){
+            System.out.println("Delegate saveImage1: " + e.getMessage());
         }
-        Graphics2D graphics2D = imagebuf.createGraphics();
+        Graphics2D graphics2D = imagebuffer.createGraphics();
         panel.paint(graphics2D);
         try {
-            ImageIO.write(imagebuf,"jpeg", fileToSave);
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            System.out.println("error");
+            ImageIO.write(imagebuffer,"jpeg", fileToSave);
+        } catch(Exception e){
+            System.out.println("Delegate saveImage2: " + e.getMessage());
         }
     }
 
@@ -278,6 +283,7 @@ public class Delegate implements PropertyChangeListener {
         private boolean zoom = true;
         private boolean drawing = false;
         private boolean displayRatio = false;
+        private boolean color = true;
 
         private int clickX;
         private int clickY;
@@ -288,17 +294,13 @@ public class Delegate implements PropertyChangeListener {
         private int width;
         private int height;
 
-        private Color[] colorArray = new Color[model.getMax_iterations()];
-
         private int[][] points;
 
         Panel(Delegate delegate){
             this.delegate = delegate;
-            //setPreferredSize(new Dimension(600,600));
             MyMouseAdapter mouseAdapter = new MyMouseAdapter();
             addMouseListener(mouseAdapter);
             addMouseMotionListener(mouseAdapter);
-            createColorArray();
         }
 
         @Override
@@ -307,13 +309,17 @@ public class Delegate implements PropertyChangeListener {
 
             int[][] points = model.getPoints();
 
-            System.out.println("Redrawn!!");
-            //g.setColor(Color.BLACK);
+            //System.out.println("Redrawn!!");
 
             for(int y = 0; y< model.resolution; y++){
                 for(int x=0; x<model.resolution; x++){
+                    if(color){
                         g.setColor(getColor(points[y][x]));
                         g.drawLine(x,y,x,y);
+                    } else if (!color && points[y][x] >= model.getMax_iterations()) {
+                        g.setColor(Color.BLACK);
+                        g.drawLine(x,y,x,y);
+                    }
                 }
             }
 
@@ -328,7 +334,6 @@ public class Delegate implements PropertyChangeListener {
 
             if(displayRatio) {
                 String ratio = "Zoom x" + model.getRatio();
-                System.out.println(ratio);
                 g.setColor(Color.WHITE);
                 g.setFont(new Font("TimesRoman", Font.BOLD, 22));
                 g.drawString(ratio, model.resolution / 10, model.resolution / 10);
@@ -337,26 +342,12 @@ public class Delegate implements PropertyChangeListener {
 
         }
 
-        private void createColorArray(){
-            for(int i=0; i<colorArray.length; i++){
-                int color = 2 * i *256/ colorArray.length;
-                if(color>255){
-                    color = 511 - color;
-                }
-                colorArray[i] = new Color(color, color, color);
-            }
-        }
-
         private Color getColor(int value){
-
             if(value == model.getMax_iterations()){
                 return Color.BLACK;
             } else {
                 return Color.getHSBColor((float)value * 2.0f / (float)model.getMax_iterations(), 1.0f, 1.0f);
             }
-
-
-
         }
 
 
@@ -373,12 +364,12 @@ public class Delegate implements PropertyChangeListener {
             @Override
             public void mouseDragged(MouseEvent e) {
                 drawing = true;
-                x = Math.min(mousePress.x, e.getPoint().x);
-                y = Math.min(mousePress.y, e.getPoint().y);
-                width = Math.abs(mousePress.x - e.getPoint().x);
-                height = Math.abs(mousePress.y - e.getPoint().y);
                 xCurrent = e.getPoint().x;
                 yCurrent = e.getPoint().y;
+                x = Math.min(mousePress.x, xCurrent);
+                y = Math.min(mousePress.y, yCurrent);
+                width = Math.abs(mousePress.x - xCurrent);
+                height = Math.abs(mousePress.y - yCurrent);
 
                 repaint();
             }
