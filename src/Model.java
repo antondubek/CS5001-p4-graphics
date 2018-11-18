@@ -7,7 +7,8 @@ import java.util.ArrayList;
 
 /**
  * Model class provides all backend functionality to the model and interacts with the MandelbrotCalculator.
- * Will fire PropertyChangeEvents when something has been altered.
+ * Will fire PropertyChangeEvents when something has been altered. Implements serializable so that the
+ * locations and log can be saved within a file for the user to come back to.
  */
 public class Model implements Serializable {
 
@@ -74,6 +75,7 @@ public class Model implements Serializable {
 
     /**
      * Sets each value for the mandelbrot to be calculated, given a previous or forward location in the logs.
+     *
      * @param logCounter Int of what index of the logs currently on. Will not be <0 or >listSize
      */
     private void setValues(int logCounter) {
@@ -98,6 +100,7 @@ public class Model implements Serializable {
 
     /**
      * Getter for the max iterations
+     *
      * @return int The current max number of iterations mandelbrot is calculated to.
      */
     public int getMax_iterations() {
@@ -106,6 +109,7 @@ public class Model implements Serializable {
 
     /**
      * Setter for max iterations. Updates variable and then updates log before firing propertychangeevents
+     *
      * @param max_iterations New max iterations
      */
     public void setMax_iterations(int max_iterations) {
@@ -118,6 +122,7 @@ public class Model implements Serializable {
     /**
      * Getter for the zoom ratio. Calculates ratio of current real values compared to initial real values.
      * Not perfect as only calculating based on the real values but close enough to give a reasonable representation.
+     *
      * @return Double Estimated Zoom
      */
     public double getRatio() {
@@ -126,6 +131,7 @@ public class Model implements Serializable {
 
     /**
      * Simple method to add a listener to notify when events are fired.
+     *
      * @param listener Listener to be added to the notifier.
      */
     public void addObserver(PropertyChangeListener listener) {
@@ -134,8 +140,9 @@ public class Model implements Serializable {
 
     /**
      * Converts two points drawn on the screen to new parameters to calculate the new mandelbrot set.
+     *
      * @param startPoint Point top left point of new mandelbrot
-     * @param endPoint Point bottom right point of new mandelbrot set.
+     * @param endPoint   Point bottom right point of new mandelbrot set.
      */
     public void setZoom(Point startPoint, Point endPoint) {
 
@@ -168,6 +175,7 @@ public class Model implements Serializable {
 
     /**
      * Maps an X value in range [0,resolution] to range [min_real, max_real]
+     *
      * @param pointX value to map in range [0,resolution]
      * @return New mapped value in range [min_real, max_real]
      */
@@ -177,6 +185,7 @@ public class Model implements Serializable {
 
     /**
      * Maps a Y value in range [0,resolution] to range [min_imaginary, max_imaginary]
+     *
      * @param pointY value to map in range [0,resolution]
      * @return New mapped value in range [min_imaginary, max_imaginary]
      */
@@ -186,8 +195,9 @@ public class Model implements Serializable {
 
     /**
      * Converts the length of 2 points passed to a distance which to then pan the mandelbrot set.
+     *
      * @param startPoint Point to pan from
-     * @param endPoint Point to pan too
+     * @param endPoint   Point to pan too
      */
     public void pan(Point startPoint, Point endPoint) {
 
@@ -246,6 +256,7 @@ public class Model implements Serializable {
 
     /**
      * Calculates the mandelbrot and returns an array of x, y values going up to the max_iterations
+     *
      * @return Array of int[y][x] point values.
      */
     public int[][] getPoints() {

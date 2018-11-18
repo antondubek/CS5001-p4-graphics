@@ -10,24 +10,34 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 
+/**
+ * Delegate class which contains the view and controller connected to the model.
+ */
 public class Delegate implements PropertyChangeListener {
 
+    // Set the size of the frame
     private static final int FRAME_HEIGHT = 850;
     private static final int FRAME_WIDTH = 800;
 
+    // Define model, buttons, panel etc
     private Model model;
     private JFrame mainFrame;
     private Panel panel;
-    private JMenuBar menu;
+    private JMenuBar menuBar;
     private JToolBar toolbar;
     private JButton drawBtn, undoBtn, redoBtn, changeIterationsBtn;
     private JCheckBox toggleModeBtn, toggleRatio, toggleColor;
 
 
-    public Delegate(Model model){
+    /**
+     * Constructor, saves the model passed to it, creates a new frame, menubar and toolbar and panel.
+     * Does general setting up.
+     * @param model Model to connect to and display data from.
+     */
+    public Delegate(Model model) {
         this.model = model;
         this.mainFrame = new JFrame();
-        menu = new JMenuBar();
+        menuBar = new JMenuBar();
         toolbar = new JToolBar();
 
         panel = new Panel(this);
@@ -36,42 +46,47 @@ public class Delegate implements PropertyChangeListener {
         setupToolbar();
         setupMenu();
 
-        mainFrame.setSize (FRAME_WIDTH, FRAME_HEIGHT);
+        mainFrame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
         mainFrame.setVisible(true);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         model.addObserver(this);
     }
 
+    /**
+     * Sets up all the objects within the toolbar and adds listeners to them.
+     */
+    private void setupToolbar() {
 
-    private void setupToolbar(){
+        // Reset button, resets the model to default when pressed
         drawBtn = new JButton("Reset");
-        drawBtn.addActionListener(new ActionListener(){     // to translate event for this button into appropriate model method call
-            public void actionPerformed(ActionEvent e){
-                // should  call method in model class if you want it to affect model
+        drawBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
                 model.resetToDefault();
                 panel.repaint();
             }
         });
 
+        // Undo button, returns to the previous state of the model
         undoBtn = new JButton("Undo");
-        undoBtn.addActionListener(new ActionListener(){     // to translate event for this button into appropriate model method call
-            public void actionPerformed(ActionEvent e){
-                // should  call method in model class if you want it to affect model
+        undoBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
                 model.undo();
                 panel.repaint();
             }
         });
 
+        // Redo button, puts the state forward when undo has been used.
         redoBtn = new JButton("Redo");
-        redoBtn.addActionListener(new ActionListener(){     // to translate event for this button into appropriate model method call
-            public void actionPerformed(ActionEvent e){
-                // should  call method in model class if you want it to affect model
+        redoBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
                 model.redo();
                 panel.repaint();
             }
         });
 
+        // Iterations button, displays the current max iterations and launches dialog box to change the value
+        // when pressed.
         changeIterationsBtn = new JButton("Iterations: " + model.getMax_iterations());
         changeIterationsBtn.addActionListener(new ActionListener() {
             @Override
@@ -82,12 +97,13 @@ public class Delegate implements PropertyChangeListener {
             }
         });
 
+        // Toggle mode checkbox, allows user to switch between zooming and pan functionality.
         toggleModeBtn = new JCheckBox("Pan", false);
         toggleModeBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JCheckBox cb = (JCheckBox) e.getSource();
-                if(cb.isSelected()){
+                if (cb.isSelected()) {
                     panel.zoom = false;
                 } else {
                     panel.zoom = true;
@@ -95,12 +111,13 @@ public class Delegate implements PropertyChangeListener {
             }
         });
 
+        // Toggle ratio checkbox, allows user to toggle whether they want to see the estimated zoom magnification.
         toggleRatio = new JCheckBox("Zoom Magnification", false);
         toggleRatio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JCheckBox cb = (JCheckBox) e.getSource();
-                if(cb.isSelected()){
+                if (cb.isSelected()) {
                     panel.displayRatio = true;
                 } else {
                     panel.displayRatio = false;
@@ -109,12 +126,13 @@ public class Delegate implements PropertyChangeListener {
             }
         });
 
+        // Toggle color checkbox, allows user to select whether they want to see the model rendered with color or just B&W.
         toggleColor = new JCheckBox("Color", true);
         toggleColor.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JCheckBox cb = (JCheckBox) e.getSource();
-                if(cb.isSelected()){
+                if (cb.isSelected()) {
                     panel.color = true;
                 } else {
                     panel.color = false;
@@ -124,7 +142,7 @@ public class Delegate implements PropertyChangeListener {
         });
 
 
-        // add buttons, label, and textfield to the toolbar
+        // add buttons and checkboxes to the toolbar
         toolbar.add(drawBtn);
         toolbar.add(undoBtn);
         toolbar.add(redoBtn);
@@ -134,29 +152,37 @@ public class Delegate implements PropertyChangeListener {
         toolbar.add(toggleColor);
 
 
-        // add toolbar to north of main frame
+        // add toolbar to the top of the main frame
         mainFrame.add(toolbar, BorderLayout.NORTH);
     }
 
 
-    private void setupMenu(){
+    /**
+     * Sets up all objects within the menuBar bar adding listeners and functionality to them.
+     */
+    private void setupMenu() {
+        // Create the menu
         JMenu file = new JMenu("File");
+        // Create the items to put in the menu
         JMenuItem load = new JMenuItem("Load");
         JMenuItem save = new JMenuItem("Save");
         JMenuItem capture = new JMenuItem("Capture");
+        // Add menuitems to the menu
         file.add(load);
         file.add(save);
         file.add(capture);
-        menu.add(file);
+        //Add the menu to the menubar.
+        menuBar.add(file);
 
+        // Load button creates a file chooser so the user can select the file from there system to load.
         load.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Specify a file to load");
                 int userSelection = fileChooser.showOpenDialog(mainFrame);
                 if (userSelection == JFileChooser.APPROVE_OPTION) {
                     File selectedFile = fileChooser.getSelectedFile();
-                    //System.out.println("Selected file: " + selectedFile.getAbsolutePath());
                     loadFile(selectedFile);
 
                     panel.repaint();
@@ -164,104 +190,132 @@ public class Delegate implements PropertyChangeListener {
             }
         });
 
+        // Save button creates file chooser with input so user can specify name of file and directory to save there
+        // progress within the mandelbrot.
         save.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
 
                 JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setDialogTitle("Specify a file to save");
+                fileChooser.setDialogTitle("Specify a file to save location in Mandelbrot");
 
                 int userSelection = fileChooser.showSaveDialog(mainFrame);
 
                 if (userSelection == JFileChooser.APPROVE_OPTION) {
                     File fileToSave = fileChooser.getSelectedFile();
                     saveModel(fileToSave);
-                    //System.out.println("Save as file: " + fileToSave.getAbsolutePath());
                 }
-
             }
         });
 
+        // Capture is used for when user would rather save as an image not the location in the program.
         capture.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setDialogTitle("Specify a file to save");
+                fileChooser.setDialogTitle("Specify a file to save the image of Mandelbrot");
 
                 int userSelection = fileChooser.showSaveDialog(mainFrame);
 
                 if (userSelection == JFileChooser.APPROVE_OPTION) {
                     File fileToSave = fileChooser.getSelectedFile();
                     saveImage(fileToSave);
-                    System.out.println("Save image as file: " + fileToSave.getAbsolutePath());
                 }
             }
         });
 
-        mainFrame.setJMenuBar(menu);
+        // Set the menuBar as the menubar in the main frame.
+        mainFrame.setJMenuBar(menuBar);
     }
 
+    /**
+     * Given a file object, method will serialize model object and save it to that file as .txt file.
+     * @param fileToSave File containing path of location to save to.
+     */
     private void saveModel(File fileToSave) {
-
+        // Get the path of the file
         String path = fileToSave.getAbsolutePath();
 
-        if(!path.endsWith(".txt")){
+        // Check it ends with .txt otherwise add .txt to it.
+        if (!path.endsWith(".txt")) {
             String newPath = path + ".txt";
             fileToSave = new File(newPath);
         }
 
-        try(FileOutputStream fOut = new FileOutputStream(fileToSave);
-            ObjectOutputStream oOut = new ObjectOutputStream(fOut)){
+        // Try with resources create an object output stream with fileoutputstream to write to.
+        try (FileOutputStream fOut = new FileOutputStream(fileToSave);
+             ObjectOutputStream oOut = new ObjectOutputStream(fOut)) {
 
+            //Write the object to the file.
             oOut.writeObject(model);
 
-        } catch(Exception e){
+        } catch (Exception e) {
             System.out.println("Delegate saveModel: " + e.getMessage());
         }
     }
 
-    private void loadFile(File selectedFile){
-        try(FileInputStream fIn = new FileInputStream(selectedFile);
-            ObjectInputStream oIn = new ObjectInputStream(fIn)){
+    /**
+     * Given a file, create an input stream and write the serialized model object back to the model variable.
+     * @param selectedFile File containing serialized model object.
+     */
+    private void loadFile(File selectedFile) {
+        try (FileInputStream fIn = new FileInputStream(selectedFile);
+             ObjectInputStream oIn = new ObjectInputStream(fIn)) {
 
             this.model = (Model) oIn.readObject();
 
-        } catch(Exception e){
+        } catch (Exception e) {
             System.out.println("Delegate saveModel: " + e.getMessage());
         }
     }
 
-    private void saveImage(File fileToSave){
+    /**
+     * Given a file path, method will screencapture the currently drawn panel and save it as a .jpeg file.
+     * @param fileToSave File containing location to save to.
+     */
+    private void saveImage(File fileToSave) {
+        //Get the path
         String path = fileToSave.getAbsolutePath();
 
-        if(!path.endsWith(".jpeg")){
+        // Check if ends with .jpeg, if not add it
+        if (!path.endsWith(".jpeg")) {
             String newPath = path + ".jpeg";
             fileToSave = new File(newPath);
         }
 
-        BufferedImage imagebuffer=null;;
+        // Initiate a buffered image to write to.
+        BufferedImage imagebuffer = null;
+
         try {
             imagebuffer = new Robot().createScreenCapture(panel.getBounds());
-        } catch(Exception e){
+        } catch (Exception e) {
             System.out.println("Delegate saveImage1: " + e.getMessage());
         }
+
+        // Draw the panel to the buffered image.
         Graphics2D graphics2D = imagebuffer.createGraphics();
         panel.paint(graphics2D);
+
+        // Write the buffered image to a file.
         try {
-            ImageIO.write(imagebuffer,"jpeg", fileToSave);
-        } catch(Exception e){
+            ImageIO.write(imagebuffer, "jpeg", fileToSave);
+        } catch (Exception e) {
             System.out.println("Delegate saveImage2: " + e.getMessage());
         }
     }
 
-    // Property change listener which is called when events fired from the model
+
+    /**
+     * Property change listener which is called when events are received from the model.
+     * @param event Event fired from the model.
+     */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
 
-        if(event.getSource() == model && event.getPropertyName().equals("updateIterations")){
-            SwingUtilities.invokeLater(new Runnable(){
-                public void run(){
-                    changeIterationsBtn.setText( event.getNewValue().toString());
+        if (event.getSource() == model && event.getPropertyName().equals("updateIterations")) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    changeIterationsBtn.setText(event.getNewValue().toString());
                     panel.repaint();
                 }
             });
@@ -277,7 +331,7 @@ public class Delegate implements PropertyChangeListener {
     }
 
 
-    class Panel extends JPanel{
+    class Panel extends JPanel {
         private Delegate delegate;
         private Rectangle rect = null;
         private boolean zoom = true;
@@ -296,7 +350,7 @@ public class Delegate implements PropertyChangeListener {
 
         private int[][] points;
 
-        Panel(Delegate delegate){
+        Panel(Delegate delegate) {
             this.delegate = delegate;
             MyMouseAdapter mouseAdapter = new MyMouseAdapter();
             addMouseListener(mouseAdapter);
@@ -311,14 +365,14 @@ public class Delegate implements PropertyChangeListener {
 
             //System.out.println("Redrawn!!");
 
-            for(int y = 0; y< model.resolution; y++){
-                for(int x=0; x<model.resolution; x++){
-                    if(color){
+            for (int y = 0; y < model.resolution; y++) {
+                for (int x = 0; x < model.resolution; x++) {
+                    if (color) {
                         g.setColor(getColor(points[y][x]));
-                        g.drawLine(x,y,x,y);
+                        g.drawLine(x, y, x, y);
                     } else if (!color && points[y][x] >= model.getMax_iterations()) {
                         g.setColor(Color.BLACK);
-                        g.drawLine(x,y,x,y);
+                        g.drawLine(x, y, x, y);
                     }
                 }
             }
@@ -326,13 +380,13 @@ public class Delegate implements PropertyChangeListener {
 
             if (drawing && zoom) {
                 g.setColor(Color.RED);
-                g.drawRect(x,y,width,height);
+                g.drawRect(x, y, width, height);
             } else if (drawing && !zoom) {
                 g.setColor(Color.RED);
-                g.drawLine(clickX,clickY,xCurrent,yCurrent);
+                g.drawLine(clickX, clickY, xCurrent, yCurrent);
             }
 
-            if(displayRatio) {
+            if (displayRatio) {
                 String ratio = "Zoom x" + model.getRatio();
                 g.setColor(Color.WHITE);
                 g.setFont(new Font("TimesRoman", Font.BOLD, 22));
@@ -342,11 +396,11 @@ public class Delegate implements PropertyChangeListener {
 
         }
 
-        private Color getColor(int value){
-            if(value == model.getMax_iterations()){
+        private Color getColor(int value) {
+            if (value == model.getMax_iterations()) {
                 return Color.BLACK;
             } else {
-                return Color.getHSBColor((float)value * 2.0f / (float)model.getMax_iterations(), 1.0f, 1.0f);
+                return Color.getHSBColor((float) value * 2.0f / (float) model.getMax_iterations(), 1.0f, 1.0f);
             }
         }
 
@@ -380,10 +434,10 @@ public class Delegate implements PropertyChangeListener {
                 Point mouseReleased = e.getPoint();
 
                 System.out.println("Mouse clicked =" + mousePress);
-                System.out.println("Mouse released = "+ mouseReleased);
+                System.out.println("Mouse released = " + mouseReleased);
 
                 //Pass the point clicked and the point released
-                if(zoom){
+                if (zoom) {
                     model.setZoom(mousePress, mouseReleased);
                 } else {
                     model.pan(mousePress, mouseReleased);
