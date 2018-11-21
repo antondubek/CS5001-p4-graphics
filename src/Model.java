@@ -161,10 +161,22 @@ public class Model implements Serializable {
         double newMaxImaginary = convertImaginary(finishY);
 
         // Set the parameteres to the new defined ones
-        min_real = newMinReal;
-        max_real = newMaxReal;
-        min_imaginary = newMinImaginary;
-        max_imaginary = newMaxImaginary;
+        // If the box is drawn the other way, flip the values so the image is not flipped.
+        if(finishX < startX){
+            min_real = newMaxReal;
+            max_real = newMinReal;
+        } else {
+            min_real = newMinReal;
+            max_real = newMaxReal;
+        }
+
+        if(finishY < startY){
+            min_imaginary = newMaxImaginary;
+            max_imaginary = newMinImaginary;
+        } else {
+            min_imaginary = newMinImaginary;
+            max_imaginary = newMaxImaginary;
+        }
 
         // Update the log
         updateLog();

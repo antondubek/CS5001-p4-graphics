@@ -460,10 +460,10 @@ public class Delegate implements PropertyChangeListener {
                 drawing = true;
                 xCurrent = e.getPoint().x;
                 yCurrent = e.getPoint().y;
-                x = Math.min(mousePress.x, xCurrent);
-                y = Math.min(mousePress.y, yCurrent);
-                width = Math.abs(mousePress.x - xCurrent);
-                height = Math.abs(mousePress.y - yCurrent);
+                x = Math.min(clickX, xCurrent);
+                y = Math.min(clickY, yCurrent);
+                width = Math.abs(clickX - xCurrent);
+                height = Math.abs(clickY - yCurrent);
 
                 repaint(); // Call repaint to make sure the box drawn updates in real time.
             }
