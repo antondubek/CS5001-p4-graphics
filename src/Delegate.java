@@ -342,7 +342,6 @@ public class Delegate implements PropertyChangeListener {
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                System.out.println("Property change event");
                 changeIterationsBtn.setText("Iterations: " + event.getNewValue().toString());
                 panel.createBufferedImage();
                 panel.repaint();
@@ -441,8 +440,6 @@ public class Delegate implements PropertyChangeListener {
                     }
                 }
             }
-
-            System.out.println("Buffered image refresh");
 
         }
 
