@@ -65,6 +65,7 @@ public class Delegate implements PropertyChangeListener {
         drawBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 model.resetToDefault();
+                panel.createBufferedImage();
                 panel.repaint();
             }
         });
@@ -74,6 +75,7 @@ public class Delegate implements PropertyChangeListener {
         undoBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 model.undo();
+                panel.createBufferedImage();
                 panel.repaint();
             }
         });
@@ -83,6 +85,7 @@ public class Delegate implements PropertyChangeListener {
         redoBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 model.redo();
+                panel.createBufferedImage();
                 panel.repaint();
             }
         });
@@ -95,6 +98,7 @@ public class Delegate implements PropertyChangeListener {
             public void actionPerformed(ActionEvent e) {
                 String input = JOptionPane.showInputDialog("Please input new Max Iterations");
                 model.setMax_iterations(Integer.parseInt(input));
+                panel.createBufferedImage();
                 panel.repaint();
             }
         });
@@ -124,6 +128,7 @@ public class Delegate implements PropertyChangeListener {
                 } else {
                     panel.displayRatio = false;
                 }
+                panel.createBufferedImage();
                 panel.repaint();
             }
         });
@@ -139,6 +144,7 @@ public class Delegate implements PropertyChangeListener {
                 } else {
                     panel.color = false;
                 }
+                panel.createBufferedImage();
                 panel.repaint();
             }
         });
@@ -152,6 +158,7 @@ public class Delegate implements PropertyChangeListener {
                 float random = 0.0f + r.nextFloat() * (360.0f - 0.0f);
                 panel.colorHue = random;
 
+                panel.createBufferedImage();
                 panel.repaint();
             }
         });
@@ -201,6 +208,7 @@ public class Delegate implements PropertyChangeListener {
                     File selectedFile = fileChooser.getSelectedFile();
                     loadFile(selectedFile);
 
+                    panel.createBufferedImage();
                     panel.repaint();
                 }
             }
@@ -332,21 +340,11 @@ public class Delegate implements PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent event) {
 
-        //TODO make these more intuitive and useful.
-
-        if (event.getSource() == model && event.getPropertyName().equals("updateIterations")) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    changeIterationsBtn.setText(event.getNewValue().toString());
-                    panel.repaint();
-                }
-            });
-        }
-
         SwingUtilities.invokeLater(new Runnable() {
-            @Override
             public void run() {
-                changeIterationsBtn.setText("Iterations: " + Integer.toString(model.getMax_iterations()));
+                System.out.println("Property change event");
+                changeIterationsBtn.setText("Iterations: " + event.getNewValue().toString());
+                panel.createBufferedImage();
                 panel.repaint();
             }
         });
@@ -373,6 +371,8 @@ public class Delegate implements PropertyChangeListener {
         private int width;
         private int height;
 
+        private BufferedImage mandelbrotImage;
+
         /**
          * Constructor to create the panel and add a mouse listener for the zoom and pan.
          */
@@ -380,6 +380,7 @@ public class Delegate implements PropertyChangeListener {
             MyMouseAdapter mouseAdapter = new MyMouseAdapter();
             addMouseListener(mouseAdapter);
             addMouseMotionListener(mouseAdapter);
+            createBufferedImage();
         }
 
         /**
@@ -391,22 +392,7 @@ public class Delegate implements PropertyChangeListener {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
 
-            // Get the points of the Mandelbrot
-            int[][] points = model.getPoints();
-
-            // For all the points in the mandelbrot set, draw them as a zero length line or 1px
-            for (int y = 0; y < model.resolution; y++) {
-                for (int x = 0; x < model.resolution; x++) {
-                    //If color is wanted add color otherwise just use black and white
-                    if (color) {
-                        g.setColor(getColor(points[y][x]));
-                        g.drawLine(x, y, x, y);
-                    } else if (!color && points[y][x] >= model.getMax_iterations()) {
-                        g.setColor(Color.BLACK);
-                        g.drawLine(x, y, x, y);
-                    }
-                }
-            }
+            g.drawImage(mandelbrotImage, 0,0,this);
 
             // If the user is drawing and zoom is selected, display the box, otherwise draw the pan line
             if (drawing && zoom) {
@@ -425,6 +411,41 @@ public class Delegate implements PropertyChangeListener {
                 g.drawString(ratio, model.resolution / 10, model.resolution / 10);
             }
         }
+
+
+        /**
+         * Creates a buffered image of the mandelbrot, this saves computational power by just having to render the
+         * image rather than recalculate the whole image when drawing the zoom and pan lines.
+         */
+        public void createBufferedImage(){
+            Dimension imageDimension = new Dimension(model.resolution, model.resolution);
+            mandelbrotImage = new BufferedImage(imageDimension.width, imageDimension.height, BufferedImage.TYPE_INT_RGB);
+
+            Graphics2D g2d = mandelbrotImage.createGraphics();
+            g2d.setBackground(Color.black);
+            g2d.fillRect(0,0, imageDimension.width, imageDimension.height);
+
+            // Get the points of the Mandelbrot
+            int[][] points = model.getPoints();
+
+            // For all the points in the mandelbrot set, draw them as a zero length line or 1px
+            for (int y = 0; y < model.resolution; y++) {
+                for (int x = 0; x < model.resolution; x++) {
+                    //If color is wanted add color otherwise just use black and white
+                    if (color) {
+                        g2d.setColor(getColor(points[y][x]));
+                        g2d.drawLine(x, y, x, y);
+                    } else if (!color && points[y][x] >= model.getMax_iterations()) {
+                        g2d.setColor(Color.BLACK);
+                        g2d.drawLine(x, y, x, y);
+                    }
+                }
+            }
+
+            System.out.println("Buffered image refresh");
+
+        }
+
 
         /**
          * Uses HSB color space model to map the mandelbrot value given to a hue color.

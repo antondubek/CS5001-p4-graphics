@@ -54,8 +54,7 @@ public class Model implements Serializable {
             setValues(logCounter);
         }
 
-        // TODO need to make these more functional send new max iterations?
-        notifier.firePropertyChange("theText", "test", "test");
+        notifier.firePropertyChange("updateIterations", 0, max_iterations);
     }
 
     /**
@@ -69,8 +68,7 @@ public class Model implements Serializable {
             setValues(logCounter);
         }
 
-        // TODO need to make these more functional
-        notifier.firePropertyChange("theText", "test", "test");
+        notifier.firePropertyChange("updateIterations", 0, max_iterations);
     }
 
     /**
@@ -182,7 +180,7 @@ public class Model implements Serializable {
         updateLog();
 
         // Send of events so that the model can be re-rendered
-        notifier.firePropertyChange("theText", "test", "test");
+        notifier.firePropertyChange("updateIterations", 0, max_iterations);
     }
 
     /**
@@ -237,7 +235,7 @@ public class Model implements Serializable {
         updateLog();
 
         // Fire events so that the mandelbrot is re-rendered
-        notifier.firePropertyChange("theText", "test", "test");
+        notifier.firePropertyChange("updateIterations", 0, max_iterations);
     }
 
     /**
@@ -263,7 +261,7 @@ public class Model implements Serializable {
         log_max_imaginary.add(this.max_imaginary);
         log_max_iterations.add(this.max_iterations);
 
-        notifier.firePropertyChange("theText", "test", "test");
+        notifier.firePropertyChange("updateIterations", 0, max_iterations);
     }
 
     /**
